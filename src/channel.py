@@ -2,8 +2,8 @@ import json
 import os
 from googleapiclient.discovery import build
 
-api_key: str = os.getenv('YT_API_KEY')
-youtube = build('youtube', 'v3', developerKey=api_key)
+
+API_KEY = os.getenv('YT_API_KEY')
 
 
 class Channel:
@@ -11,13 +11,57 @@ class Channel:
 
     def __init__(self, channel_id: str) -> None:
         """
-        Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API.
+        1. Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API.
+        2. Модифицируйте конструктор `Channel`, чтобы после инициализации экземпляр имел следующие атрибуты,
+        заполненные реальными данными канала:
         """
-        self.channel_id = channel_id
+        self.__channel_id = channel_id
+        channel = Channel.get_service().channels().list(id=channel_id, part='snippet,statistics').execute()
+        # Название канала
+        self.title = channel['items'][0]['snippet']['title']
+        # Описание кана
+        self.info = channel["items"][0]["snippet"]["description"]
+        # ссылка на канал
+        self.url = channel["items"][0]["snippet"]["thumbnails"]["default"]["url"]
+        # - количество подписчиков
+        self.subscriber_count = channel["items"][0]["statistics"]["subscriberCount"]
+        # - количество видео
+        self.video_count = channel["items"][0]["statistics"]["videoCount"]
+        # - общее количество просмотров
+        self.view_count = channel["items"][0]["statistics"]["viewCount"]
+
+    @classmethod
+    def get_service(cls):
+        """Возвращает объект для работы с YouTube API"""
+        youtube = build('youtube', 'v3', developerKey=API_KEY)
+        return youtube
+
+    # @property
+    # def channel_id(self):
+    #     return self.__channel_id
+
+    # getter channel_id "закомментировала", т.к. при запуске moscowpython.channel_id = 'Новое название'
+    # выдает ошибку: AttributeError: property 'channel_id' of 'Channel' object has no setter
+    # и "падает" код, не доходит до print(Channel.get_service()) и moscowpython.to_json('moscowpython.json')
 
     def print_info(self) -> None:
         """
         Выводит в консоль информацию о канале.
         """
-        dict_to_print = youtube.channels().list(id=self.channel_id, part='snippet,statistics').execute()
-        print(json.dumps(dict_to_print, indent=2, ensure_ascii=False))
+        instance_data = Channel.get_service().channels().list(id=self.__channel_id, part='snippet,statistics').execute()
+        print(json.dumps(instance_data, indent=2, ensure_ascii=False))
+
+    def to_json(self, file_json):
+        """Сохраняет в файл значения атрибутов экземпляра `Channel`
+        создает файл 'moscowpython.json' с данными по каналу"""
+        instance_data = {
+            'channel_id': self.__channel_id,
+            'title': self.title,
+            'description': self.info,
+            'url': self.url,
+            'subscriber_count': self.subscriber_count,
+            'video_count': self.video_count,
+            'view_count': self.view_count
+        }
+        with open(file_json, "w") as file:
+            json.dump(instance_data, file, indent=2, ensure_ascii=False)
