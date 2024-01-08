@@ -44,6 +44,34 @@ class Channel:
     # выдает ошибку: AttributeError: property 'channel_id' of 'Channel' object has no setter
     # и "падает" код, не доходит до print(Channel.get_service()) и moscowpython.to_json('moscowpython.json')
 
+    def __str__(self):
+        """Возвращает название и ссылку на канал по шаблону `<название_канала> (<ссылка_на_канал>)`"""
+        return f"'{self.title} ({self.url})'"
+
+    def __add__(self, other):
+        return int(self.subscriber_count) + int(other.subscriber_count)
+
+    def __sub__(self, other):
+        return int(self.subscriber_count) - int(other.subscriber_count)
+
+    def __rsub__(self, other):
+        return int(other.subscriber_count) - int(self.subscriber_count)
+
+    def __gt__(self, other):
+        return int(self.subscriber_count) > int(other.subscriber_count)
+
+    def __ge__(self, other):
+        return int(self.subscriber_count) >= int(other.subscriber_count)
+
+    def __lt__(self, other):
+        return int(self.subscriber_count) < int(other.subscriber_count)
+
+    def __le__(self, other):
+        return int(self.subscriber_count) <= int(other.subscriber_count)
+
+    def __eq__(self, other):
+        return int(self.subscriber_count) == int(other.subscriber_count)
+
     def print_info(self) -> None:
         """
         Выводит в консоль информацию о канале.
@@ -63,5 +91,5 @@ class Channel:
             'video_count': self.video_count,
             'view_count': self.view_count
         }
-        with open(file_json, "w") as file:
+        with open(file_json, "w", encoding="utf-8") as file:
             json.dump(instance_data, file, indent=2, ensure_ascii=False)
