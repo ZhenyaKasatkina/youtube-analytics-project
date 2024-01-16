@@ -22,7 +22,7 @@ class Channel:
         # Описание кана
         self.info = channel["items"][0]["snippet"]["description"]
         # ссылка на канал
-        self.url = channel["items"][0]["snippet"]["thumbnails"]["default"]["url"]
+        self.url = f"https://www.youtube.com/channel/{self.__channel_id}"
         # - количество подписчиков
         self.subscriber_count = channel["items"][0]["statistics"]["subscriberCount"]
         # - количество видео
