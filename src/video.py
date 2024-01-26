@@ -13,21 +13,50 @@ class Video:
         1. Экземпляр инициализируется id видео из ютуб
         Дальше все данные будут подтягиваться по API.
         """
-        # id видео
-        self.video_id = video_id
-        video_response = Video.get_service().videos().list(part='snippet,statistics,contentDetails,topicDetails',
-                                                           id=video_id
-                                                           ).execute()
-        # print(f"видео: {video_response}")
+        try:
+            # id видео
+            self.video_id = video_id
+            video_response = Video.get_service().videos().list(
+                part='snippet,statistics,contentDetails,topicDetails',
+                id=video_id
+            ).execute()
+            # print(f"видео: {video_response}")
+            # Название видео
+            self.title: str = video_response['items'][0]['snippet']['title']
+            # ссылка на видео
+            self.url = f"https://www.youtube.com/watch?v/{self.video_id}"
+            # количество просмотров
+            self.view_count: int = video_response['items'][0]['statistics']['viewCount']
+            # # количество лайков
+            self.like_count: int = video_response['items'][0]['statistics']['likeCount']
 
-        # Название видео
-        self.video_title: str = video_response['items'][0]['snippet']['title']
-        # ссылка на видео
-        self.url = f"https://www.youtube.com/watch?v/{self.video_id}"
-        # количество просмотров
-        self.view_count: int = video_response['items'][0]['statistics']['viewCount']
-        # # количество лайков
-        self.like_count: int = video_response['items'][0]['statistics']['likeCount']
+        except IndexError:
+            # id видео
+            self.video_id = video_id
+            # Название видео
+            self.title = None
+            # ссылка на видео
+            self.url = None
+            # количество просмотров
+            self.view_count = None
+            # # количество лайков
+            self.like_count = None
+
+        else:
+            # id видео
+            self.video_id = video_id
+            video_response = Video.get_service().videos().list(
+                part='snippet,statistics,contentDetails,topicDetails',
+                id=video_id
+            ).execute()
+            # Название видео
+            self.title: str = video_response['items'][0]['snippet']['title']
+            # ссылка на видео
+            self.url = f"https://www.youtube.com/watch?v/{self.video_id}"
+            # количество просмотров
+            self.view_count: int = video_response['items'][0]['statistics']['viewCount']
+            # # количество лайков
+            self.like_count: int = video_response['items'][0]['statistics']['likeCount']
 
     @classmethod
     def get_service(cls):
@@ -36,7 +65,7 @@ class Video:
         return youtube
 
     def __str__(self):
-        return self.video_title
+        return self.title
 
 
 class PLVideo(Video):
@@ -55,9 +84,3 @@ class PLVideo(Video):
         """
         super().__init__(video_id)
         self.playlist_id = playlist_id
-
-        # playlist_videos = PLVideo.get_service().playlistItems().list(playlistId=playlist_id,
-        #                                                              part='contentDetails',
-        #                                                              maxResults=50,
-        #                                                              ).execute()
-        # print(f"Плейлист: {playlist_videos}")
